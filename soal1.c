@@ -64,13 +64,18 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 {
 	int fd;
 	int res;
-
+	char new_str[100];
 
 	(void) fi;
 	if (!strcmp(strrchr(path, '\0') - 4, ".txt") || !strcmp(strrchr(path, '\0') - 4, ".doc") || !strcmp(strrchr(path, '\0') - 4, ".pdf")){
 		system("notify-send \"Terjadi kesalahan! File berisi konten berbahaya.\"");
+		strncpy(new_str, path, strlen(path));
+		strcat(new_str, ".ditandai");
+		int status;
+		status = rename(path,new_str);
+		if(status == 0 ) printf("%s\n",new_str );
+		else printf("%s\n",path );
 	}
-
 	else{
 		fd = open(path, O_RDONLY);
 		if (fd == -1)
