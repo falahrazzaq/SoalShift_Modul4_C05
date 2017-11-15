@@ -65,17 +65,24 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 	int fd;
 	int res;
 
+
 	(void) fi;
-	fd = open(path, O_RDONLY);
-	if (fd == -1)
-		return -errno;
+	if (!strcmp(strrchr(path, '\0') - 4, ".txt") || !strcmp(strrchr(path, '\0') - 4, ".doc") || !strcmp(strrchr(path, '\0') - 4, ".pdf")){
+		system("notify-send \"Terjadi kesalahan! File berisi konten berbahaya.\"");
+	}
 
-	res = pread(fd, buf, size, offset);
-	if (res == -1)
-		res = -errno;
+	else{
+		fd = open(path, O_RDONLY);
+		if (fd == -1)
+			return -errno;
 
-	close(fd);
-	return res;
+		res = pread(fd, buf, size, offset);
+		if (res == -1)
+			res = -errno;
+
+		close(fd);
+		return res;
+	}
 }
 
 static struct fuse_operations xmp_oper = {
