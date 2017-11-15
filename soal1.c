@@ -22,11 +22,15 @@
 #include <sys/xattr.h>
 #endif
 
+static const char *dirpath = "/home/administrator/Documents/";
+
 static int xmp_getattr(const char *path, struct stat *stbuf)
 {
 	int res;
+	char fpath[1000];
 
-	res = lstat(path, stbuf);
+	sprintf(fpath,"%s%s",dirpath, path);
+	res = lstat(fpath, stbuf);
 	if (res == -1)
 		return -errno;
 
@@ -42,7 +46,11 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	(void) offset;
 	(void) fi;
 
-	dp = opendir(path);
+	char fpath[1000];
+
+	sprintf(fpath,"%s%s",dirpath, path);
+
+	dp = opendir(fpath);
 	if (dp == NULL)
 		return -errno;
 
@@ -65,16 +73,19 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 	int fd;
 	int res;
 	char new_str[100];
+	char fpath[1000];
+
+	sprintf(fpath,"%s%s",dirpath, path);	
 
 	(void) fi;
-	if (!strcmp(strrchr(path, '\0') - 4, ".txt") || !strcmp(strrchr(path, '\0') - 4, ".doc") || !strcmp(strrchr(path, '\0') - 4, ".pdf")){
+	if (!strcmp(strrchr(fpath, '\0') - 4, ".txt") || !strcmp(strrchr(fpath, '\0') - 4, ".doc") || !strcmp(strrchr(fpath, '\0') - 4, ".pdf")){
 		system("notify-send \"Terjadi kesalahan! File berisi konten berbahaya.\"");
-		strncpy(new_str, path, strlen(path));
+		strncpy(new_str, fpath, strlen(fpath));
 		strcat(new_str, ".ditandai");
 		int status;
-		status = rename(path,new_str);
-		if(status == 0 ) printf("%s\n",new_str );
-		else printf("%s\n",path );
+		status = rename(fpath,new_str);
+		if(status == 0 ) printf("%s\n",new_str );		//debug
+		else printf("%s\n%s\n",path,dirpath );			//debug
 	}
 	else{
 		fd = open(path, O_RDONLY);
