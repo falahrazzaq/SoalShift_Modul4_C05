@@ -84,25 +84,23 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		struct stat st = {0};
 
 		if (stat("/home/administrator/Documents/rahasia", &st) == -1) {
-   			mkdir("/home/administrator/Documents/rahasia", 0777);
+   			mkdir("/home/administrator/Documents/rahasia", 0777); //buat directory jika belum ada
 		}
 
 		strncpy(dir, dirpath, strlen(dirpath));
 		strcat(dir, "rahasia/");
-		/*int statu;
-		statu = rename(dirpath,dir);
-		if(statu == 0 ) printf("%s\n",dir );		//debug
-		else printf("%s\n%s\n",path,dirpath );*/
 
 		sprintf(gpath,"%s%s",dir, path);
 
 		strncpy(new_str, gpath, strlen(gpath));
 		strcat(new_str, ".ditandai");
+		
 		int status;
-		status = rename(fpath,new_str);
+		status = rename(fpath,new_str);					//ganti tempat
 		if(status == 0 ) printf("%s\n",new_str );		//debug
-		else printf("%s\n%s\n%s\n",gpath,new_str,dir );			//debug
+		else printf("%s\n%s\n%s\n",gpath,new_str,dir );	//debug
 
+		chmod(new_str,0000); //ganti permission
 
 	}
 	else{
