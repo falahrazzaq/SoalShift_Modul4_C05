@@ -23,6 +23,7 @@
 #endif
 
 static const char *dirpath = "/home/khawari/Downloads/"; 	//JANGAN LUPA GANTI NAMA USER
+static const char *dir = "/home/khawari/Downloads/simpanan"; 	//JANGAN LUPA GANTI NAMA USER
 
 static int xmp_getattr(const char *path, struct stat *stbuf)
 {
@@ -74,14 +75,10 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 {
 	int fd;
 	int res;
-	char fpath[1000],gpath[1000],dir[1000];
+	char fpath[1000],gpath[1000];
 	printf("read\n");
 
 	sprintf(fpath,"%s%s",dirpath, path);	
-
-	strncpy(dir, dirpath, 	strlen(dirpath));
-	strcat(dir, "simpanan/");
-
 
 	sprintf(gpath,"%s%s.copy",dirpath, path);
 
@@ -104,12 +101,12 @@ static int xmp_truncate(const char *path, off_t size)
 {
 	int res;
 
-	char fpath[1000],dir[1000],gpath[1000];
+	char fpath[1000],gpath[1000];
 
 	sprintf(fpath,"%s%s",dirpath, path);	
 
-	strncpy(dir, dirpath, 	strlen(dirpath));
-	strcat(dir, "simpanan/");
+//	strncpy(dir, dirpath, 	strlen(dirpath));
+//	strcat(dir, "simpanan/");
 
 
 	sprintf(gpath,"%s%s.copy",dirpath, path);
@@ -158,10 +155,10 @@ static int xmp_write(const char *path, const char *buf, size_t size,
 	int fd;
 	int res;
 		printf("write\n");
-	char fpath[1000],gpath[1000],hpath[1000],dir[100];
+	char fpath[1000],gpath[1000],hpath[1000];
 
-	strncpy(dir, dirpath, 	strlen(dirpath));
-	strcat(dir, "simpanan/");
+//	strncpy(dir, dirpath, 	strlen(dirpath));
+//	strcat(dir, "simpanan/");
 
 	sprintf(fpath,"%s%s.copy",dirpath, path);
 
