@@ -22,7 +22,7 @@
 #include <sys/xattr.h>
 #endif
 
-static const char *dirpath = "/home/administrator/Downloads/";
+static const char *dirpath = "/home/khawari/Downloads/"; 	//JANGAN LUPA GANTI NAMA USER
 
 static int xmp_getattr(const char *path, struct stat *stbuf)
 {
@@ -67,43 +67,85 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	return 0;
 }
 
+#define BUFF_SIZE 1024
+
 static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
 	int fd;
 	int res;
 	char fpath[1000];
+	printf("read\n");
 
 	sprintf(fpath,"%s%s",dirpath, path);	
+	printf("%s\n",fpath );
+	(void) fi;
 
-	if (!strcmp(strrchr(fpath, '\0') - 4, ".copy")){
-		system("notify-send \"File yang anda buka adalah file hasil salinan. File tidak bisa diubah maupun disalin kembali!\"");
+	if (!strcmp(strrchr(fpath, '\0') - 5, ".copy")){
+		system("notify-send \"Terjadi kesalahan! File berisi konten berbahaya.\"");
+		return 0;
 	}
 	else{
-		(void) fi;
-	
 		fd = open(fpath, O_RDONLY);
 		if (fd == -1)
 			return -errno;
+
 
 		res = pread(fd, buf, size, offset);
 		if (res == -1)
 			res = -errno;
 
 		close(fd);
+		return res;
 	}
-	return res;
 }
 
 static int xmp_truncate(const char *path, off_t size)
 {
 	int res;
 
-	char fpath[1000];
+	char fpath[1000],dir[1000],gpath[1000];
 
-	sprintf(fpath,"%s%s",dirpath, path);
+	sprintf(fpath,"%s%s",dirpath, path);	
 
-	res = truncate(fpath, size);
+	strncpy(dir, dirpath, 	strlen(dirpath));
+	strcat(dir, "simpanan/");
+
+
+	sprintf(gpath,"%s%s.copy",dirpath, path);
+
+		struct stat st = {0};
+	if (stat("/home/khawari/Downloads/simpanan", &st) == -1) {
+   			mkdir("/home/khawari/Downloads/simpanan", 0777); //buat directory jika belum ada
+		}
+
+	//-------------------------------------------------------
+    int files[2];
+    int nbread;
+    char *buff[BUFF_SIZE];
+
+    /* Check for insufficient parameters */
+    files[0] = open(fpath, O_RDONLY);
+    if (files[0] == -1) /* Check if file opened */
+        return -1;
+    files[1] = open(gpath, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    if (files[1] == -1) /* Check if file opened (permissions problems ...) */
+    {
+        close(files[0]);
+        return -1;
+    }
+
+	while((nbread = read(files[0],buff,BUFF_SIZE)) > 0)
+	{
+		printf("%d\n",nbread );
+		if(write(files[1],buff,nbread) != nbread)
+			printf("\nError in writing data to %s\n",gpath);
+	}
+	//-------------------------------------------------------------
+
+
+	printf("%s\ntruncate\n",fpath);
+	res = truncate(gpath, size);
 	if (res == -1)
 		return -errno;
 
@@ -113,43 +155,33 @@ static int xmp_truncate(const char *path, off_t size)
 static int xmp_write(const char *path, const char *buf, size_t size,
 		     off_t offset, struct fuse_file_info *fi)
 {
-	int fd,fe;
+	int fd;
 	int res;
-
+		printf("write\n");
 	char fpath[1000],gpath[1000],dir[100];
 
-	sprintf(fpath,"%s%s",dirpath, path);
-
-	strncpy(dir, dirpath, strlen(dirpath));
+	strncpy(dir, dirpath, 	strlen(dirpath));
 	strcat(dir, "simpanan/");
 
-	sprintf(gpath,"%s%s.copy",dir, path);
+	sprintf(fpath,"%s%s.copy",dirpath, path);
 
 	(void) fi;
-	fd = open(fpath, O_WRONLY);
+	fd = open(fpath, O_WRONLY );
 	if (fd == -1)
 		return -errno;
 
-	FILE *fptr;
-
-	struct stat st = {0};
-	if (stat("/home/administrator/Downloads/simpanan", &st) == -1) {
-   			mkdir("/home/administrator/Downloads/simpanan", 0777); //buat directory jika belum ada
-		}
-
-    fptr = fopen(gpath, "w+");
-
-    fe = open(gpath, O_WRONLY);
-	if (fe == -1)
-		return -errno;
-
-	res = pwrite(fe, buf, size, offset);
+	res = pwrite(fd, buf, size, offset);
 	if (res == -1)
 		res = -errno;
 
+	sprintf(gpath,"%s%s.copy",dir, path);
+
+	int status;
+	status = rename(fpath,gpath);					//ganti tempat
+	if(status == 0 ) printf("%s\n",gpath );			//debug
+	else printf("%s\n%s\n%s\n",fpath,dir,path );	//debug
+
 	close(fd);
-	close(fe);
-	fclose(fptr);
 	return res;
 }
 

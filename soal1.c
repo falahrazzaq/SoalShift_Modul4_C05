@@ -22,7 +22,7 @@
 #include <sys/xattr.h>
 #endif
 
-static const char *dirpath = "/home/administrator/Documents/";
+static const char *dirpath = "/home/administrator/Documents/"; //JANGAN LUPA GANTI NAMA USER
 
 static int xmp_getattr(const char *path, struct stat *stbuf)
 {

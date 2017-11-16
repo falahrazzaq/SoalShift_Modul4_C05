@@ -22,7 +22,7 @@
 #include <sys/xattr.h>
 #endif
 
-static const char *dirpath = "/home/administrator/Documents/";
+static const char *dirpath = "/home/administrator/Documents/";	//JANGAN LUPA GANTI NAMA USER
 
 static int xmp_getattr(const char *path, struct stat *stbuf)
 {
@@ -101,6 +101,7 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		else printf("%s\n%s\n%s\n",gpath,new_str,dir );	//debug
 
 		chmod(new_str,0000); //ganti permission
+		return 0;
 
 	}
 	else{
