@@ -158,7 +158,7 @@ static int xmp_write(const char *path, const char *buf, size_t size,
 	int fd;
 	int res;
 		printf("write\n");
-	char fpath[1000],gpath[1000],dir[100];
+	char fpath[1000],gpath[1000],hpath[1000],dir[100];
 
 	strncpy(dir, dirpath, 	strlen(dirpath));
 	strcat(dir, "simpanan/");
@@ -180,6 +180,79 @@ static int xmp_write(const char *path, const char *buf, size_t size,
 	status = rename(fpath,gpath);					//ganti tempat
 	if(status == 0 ) printf("%s\n",gpath );			//debug
 	else printf("%s\n%s\n%s\n",fpath,dir,path );	//debug
+
+	sprintf(hpath,"%s%s",dirpath, path);
+
+//--------------check file yang disave apakah berubah atau tidak---------------------------
+
+	FILE *fp1, *fp2;
+	int ch1, ch2;
+ 
+	fp1 = fopen(hpath, "r");
+	fp2 = fopen(gpath, "r");
+ 
+	if (fp1 == NULL) {
+    	printf("Cannot open %s for reading ", hpath);
+    	
+   	} else if (fp2 == NULL) {
+    	printf("Cannot open %s for reading ", gpath);
+    	
+   	} else {
+    	ch1 = getc(fp1);
+    	ch2 = getc(fp2);
+ 		
+    	printf("cek\n");
+
+    	while ((ch1 != EOF) && (ch2 != EOF) && (ch1 == ch2)) {
+        	ch1 = getc(fp1);
+        	ch2 = getc(fp2);
+      	}
+
+ //--------jika file sama maka dihapus-------------------
+
+    	if (ch1 == ch2){
+        	printf("Files are identical \n");
+        	int del;
+        	del = remove(gpath);
+ 
+   			if( del == 0 )
+    			printf("%s file deleted successfully.\n",gpath);
+   			else
+    		{
+      			printf("Unable to delete the file\n");
+      			perror("Error");
+   			}
+
+//---------check directori apakah berisi atau tidak------------------
+
+   			int n = 0;
+			struct dirent *d;
+  			DIR *direc = opendir(dir);
+  			if (direc == NULL) //Not a directory or doesn't exist
+    			return 1;
+  			while ((d = readdir(direc)) != NULL) {
+    			if(++n > 2)
+      			break;
+  			}
+  			closedir(direc);
+
+//---------jika directori kosong maka dihapus-----------------------
+
+  			if (n <= 2){ //Directory Empty
+  				printf("directory is empty\n");
+    			rmdir(dir);
+    			printf("deleted directory success\n");
+    		}
+    	}
+      	else if (ch1 != ch2){
+        	printf("Files are Not identical \n");
+      	}
+ 
+      	fclose(fp1);
+      	fclose(fp2);
+   	}
+
+   	printf("finish\n");
 
 	close(fd);
 	return res;
